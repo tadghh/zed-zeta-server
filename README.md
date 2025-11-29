@@ -1,3 +1,6 @@
+# Note
+This is a fork of [this](https://github.com/g0t4/zed-zeta-server) I take no credit, the only changes I made were styling/cleanup.
+
 ## Running server
 
 ```bash
