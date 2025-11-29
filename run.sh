@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-# check if in VENV and warn if not
-if [ -z "$VIRTUAL_ENV" ]; then
-    echo "Warning: Not in a virtual environment. This may cause problems."
-    echo "See README.md for more information."
-    exit 1
+if [ -d ".venv" ]; then
+    uv venv -c
 fi
+source .venv/bin/activate
+uv sync
 
-fastapi dev --port 9000 sync/server.py
+uvicorn sync.server:app --host 0.0.0.0 --port 9000

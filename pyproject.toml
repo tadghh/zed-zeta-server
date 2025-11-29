@@ -1,0 +1,12 @@
+[project]
+name = "zed-zeta"
+author = "g0t4 (original), ethan"
+repository = "https://github.com/tadghh/zed-zeta-server"
+version = "0.1.0"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "pydantic",
+    "rich",
+]

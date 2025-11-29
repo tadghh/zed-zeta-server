@@ -1,5 +1,0 @@
-httpx
-rich
-ipykernel
-fastapi[standard]
-uvicorn[standard]
