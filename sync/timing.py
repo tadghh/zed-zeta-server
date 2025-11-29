@@ -2,7 +2,6 @@ import time
 
 
 class Timer:
-
     def __init__(self, what) -> None:
         self.what = what
 

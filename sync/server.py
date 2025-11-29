@@ -1,11 +1,13 @@
-import uuid
-from fastapi import FastAPI, Request
 import asyncio
+import uuid
+from typing import Any  # , Set, Dict, Tuple
+
 import httpx
-from timing import Timer
-from rich import print as rich_print, print_json
-from typing import Any, List  #, Set, Dict, Tuple
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
+from rich import print as rich_print
+from rich import print_json
+from timing import Timer
 
 print = rich_print
 
@@ -35,6 +37,7 @@ app = FastAPI()
 #   export ZED_PREDICT_EDITS_URL=http://localhost:1234/predict_edits # or w/e route I use below
 #   zed  # zed will use the URL for request (already confirmed this works)
 
+
 #
 # TODO try run quantized and/or ngram spec dec too:
 #  vllm serve zed-industries/zeta --served-model-name zeta --enable-prefix-caching --enable-chunked-prefill --quantization="fp8" --speculative-model [ngram] --ngram-prompt-lookup-max 4 --ngram-prompt-lookup-min 2 --num-speculative-tokens 8
@@ -50,9 +53,9 @@ class PredictEditsRequest(BaseModel):
     can_collect_data: bool = False
     diagnostic_groups: list[Any] = []
 
+
 @app.post("/predict_edits")
 async def predict_edits(request: Request, predict_request: PredictEditsRequest):
-
     print("\n\n[bold red]## Zed request body:")
     print(predict_request)
 
@@ -77,7 +80,9 @@ async def predict_edits(request: Request, predict_request: PredictEditsRequest):
 
     # TODO is there a header before Instruction?
     prompt_template = """### Instruction:\nYou are a code completion assistant and your task is to analyze user edits and then rewrite an excerpt that the user provides, suggesting the appropriate edits within the excerpt, taking into account the cursor location.\n\n### User Edits:\n\n{}\n\n### User Excerpt:\n\n{}\n\n### Response:\n"""
-    prompt = prompt_template.format(predict_request.input_events, predict_request.input_excerpt)
+    prompt = prompt_template.format(
+        predict_request.input_events, predict_request.input_excerpt
+    )
 
     print("\n\n[bold red]## Prompt:")
     print(prompt)
@@ -91,9 +96,7 @@ async def predict_edits(request: Request, predict_request: PredictEditsRequest):
         async with httpx.AsyncClient(timeout=timeout_seconds) as client:
             with Timer("inner"):
                 request_body = {
-
                     "model": "huggingface.co/lmstudio-community/zeta-GGUF:zeta-Q8_0",
-
                     # "model": "zeta", # LMStudio defaults to zeta
                     # * for VLLM clear model or set matching value with `--served-model-name zeta`
                     "prompt": prompt,
@@ -107,19 +110,22 @@ async def predict_edits(request: Request, predict_request: PredictEditsRequest):
                     # "rewrite_speculation": True # TODO?
                 }
                 print("\n\n[bold red]## request body => zeta /v1/completions:")
-                print_json(data=request_body)  # FYI print_json doesn't hard wrap lines, uses " instead of ', obvi compat w/ jq
+                print_json(
+                    data=request_body
+                )  # FYI print_json doesn't hard wrap lines, uses " instead of ', obvi compat w/ jq
 
-                response = await client.post(OPENAI_COMPAT_V1_COMPLETIONS_URL, json=request_body)
+                response = await client.post(
+                    OPENAI_COMPAT_V1_COMPLETIONS_URL, json=request_body
+                )
                 response_body = response.json()
                 print("\n\n[bold red]## zeta /v1/completions => response body:")
                 print_json(data=response_body)
                 response.raise_for_status()
                 choice_text = response_body.get("choices", [{}])[0].get("text", "")
-                response_id = str(uuid.uuid4()).replace("-", "") # zed requires this
+                response_id = str(uuid.uuid4()).replace("-", "")  # zed requires this
 
                 return {
                     "output_excerpt": choice_text,
-
                     # FYI PR/23997 does not set request_id so lets skip for now, was only in zeta codebase
                     "request_id": response_id,  # required, UUID
                     # here is where crates/zeta uses reuest_id:
@@ -158,6 +164,7 @@ async def predict_edits(request: Request, predict_request: PredictEditsRequest):
     #   hit i to go into insert mode
     #   hit escape to bail
     #   you will see aborted in vllm logs! (and in predict_edits logs)
+
 
 # I prefer fastapi dev ... but uvicorn can do hot reload too
 # if __name__ == "__main__":
