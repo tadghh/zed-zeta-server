@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-if [ -d ".venv" ]; then
-    uv venv -c
+if [ ! -d ".venv" ]; then
+    uv venv
 fi
+
 source .venv/bin/activate
 uv sync
 
