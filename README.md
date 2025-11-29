@@ -40,3 +40,4 @@ Port is the port of this proxy server not the LLM
 export ZED_PREDICT_EDITS_URL=http://localhost:port/predict_edits
 zed
 ```
+On Windows you would add this as a System or User environment variable. Make sure to use the devices IP instead of localhost if you arent running the model on the same machine.
